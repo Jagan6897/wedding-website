@@ -1,48 +1,30 @@
-// =============================================
-// Wedding Configuration
-// Update these values with your actual details!
-// =============================================
+import pg from 'pg';
 
-// =============================================
-// Wedding Configuration (Static Fallback)
-// =============================================
+const { Pool } = pg;
 
-export const DEFAULT_CONFIG = {
-    // Couple Names
+// Load env vars (Node 20+ supports --env-file, so we don't need dotenv here if run with that flag)
+const pool = new Pool({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: parseInt(process.env.DB_PORT || '5432'),
+    ssl: { rejectUnauthorized: false }
+});
+
+const INITIAL_CONFIG = {
     bride: 'Mamatha',
     groom: 'Jagadeesh',
-
-    // Wedding Date — Update this to your exact date & time
-    weddingDate: new Date('2026-03-25T09:00:00'),
-
-    // Live Stream unlock date (same as wedding day)
-    liveStreamDate: new Date('2026-03-25T08:00:00'),
+    weddingDate: '2026-03-25T09:00:00.000Z',
+    liveStreamDate: '2026-03-25T08:00:00.000Z',
     liveStreamUrl: '',
-
-    // Wedding Hashtag
     hashtag: '#JagadeeshWedsMamatha2026',
-
-    // Venue Details
     venue: {
         name: 'GR Convention',
         address: 'Hasakothur, Telangana',
-        rsvpUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdKB8...", // Replace with your Google Form
-        galleryPlaceholders: [
-            { emoji: '🌸', label: 'Floral Dreams' },
-            { emoji: '🪷', label: 'Lotus Blessings' },
-            { emoji: '✨', label: 'Golden Moments' },
-            { emoji: '💍', label: 'Ring Ceremony' },
-            { emoji: '🌺', label: 'Marigold Magic' },
-            { emoji: '🎊', label: 'Celebrations' },
-            { emoji: '🪔', label: 'Divine Light' },
-            { emoji: '💐', label: 'Bouquet' },
-            { emoji: '🎶', label: 'Musical Night' },
-        ],
         mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3800!2d78.5176141!3d18.8005382!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcda3df6a9a83f3%3A0x652f99e54b28895e!2sGR%20Convention%20Hasakothur!5e0!3m2!1sen!2sin!4v1697001234567!5m2!1sen!2sin',
         mapsLink: 'https://maps.app.goo.gl/hzLZzwBPmGpsAMhs8',
     },
-
-    // Events Schedule
     events: [
         {
             emoji: '💍',
@@ -105,8 +87,6 @@ export const DEFAULT_CONFIG = {
             dressColor: '#8B1A2B',
         },
     ],
-
-    // Our Story Timeline
     story: [
         {
             date: 'May 2025',
@@ -134,8 +114,6 @@ export const DEFAULT_CONFIG = {
             description: "And now, we invite you to celebrate as we tie the sacred knot. Here's to love, family, and happily ever after!",
         },
     ],
-
-    // Family
     brideFamily: [
         { name: 'Jadala Santhosh', relation: 'Father of the Bride', emoji: '👨' },
         { name: 'Jadala Gangamani', relation: 'Mother of the Bride', emoji: '👩' },
@@ -149,24 +127,40 @@ export const DEFAULT_CONFIG = {
     ],
 };
 
-// Mutable config that will be updated from API
-export let WEDDING_CONFIG = { ...DEFAULT_CONFIG };
-
-export async function fetchConfig() {
+async function seed() {
+    const client = await pool.connect();
     try {
-        const response = await fetch('/api/content');
-        if (response.ok) {
-            const data = await response.json();
-            if (data && Object.keys(data).length > 0) {
-                // Parse dates back to Date objects
-                if (data.weddingDate) data.weddingDate = new Date(data.weddingDate);
-                if (data.liveStreamDate) data.liveStreamDate = new Date(data.liveStreamDate);
-                WEDDING_CONFIG = { ...DEFAULT_CONFIG, ...data };
-                return WEDDING_CONFIG;
-            }
-        }
-    } catch (error) {
-        console.warn('Failed to fetch dynamic config, using static defaults:', error);
+        console.log('🔌 Connected to database...');
+
+        // 1. Create Table
+        await client.query(`
+      CREATE TABLE IF NOT EXISTS wedding_config (
+        key TEXT PRIMARY KEY,
+        value JSONB NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+        console.log('✅ Table "wedding_config" ensured.');
+
+        // 2. Insert Data
+        // We use ON CONFLICT to update if it already exists, so running this script multiple times is safe
+        const query = `
+      INSERT INTO wedding_config (key, value, updated_at)
+      VALUES ($1, $2, NOW())
+      ON CONFLICT (key) DO UPDATE 
+      SET value = EXCLUDED.value, updated_at = NOW();
+    `;
+
+        await client.query(query, ['main_config', JSON.stringify(INITIAL_CONFIG)]);
+        console.log('✅ Configuration seeded successfully!');
+
+    } catch (err) {
+        console.error('❌ Error seeding database:', err);
+        process.exit(1);
+    } finally {
+        client.release();
+        await pool.end();
     }
-    return DEFAULT_CONFIG;
 }
+
+seed();

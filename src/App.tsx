@@ -1,31 +1,28 @@
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import OurStory from './components/OurStory';
-import Events from './components/Events';
-import Gallery from './components/Gallery';
-import DressCode from './components/DressCode';
-import Venue from './components/Venue';
-import RSVP from './components/RSVP';
-import LiveStream from './components/LiveStream';
-import GuestBook from './components/GuestBook';
-import FamilyIntro from './components/FamilyIntro';
-import Footer from './components/Footer';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import PublicHome from './components/PublicHome';
+import AdminLayout from './components/admin/AdminLayout';
+import Dashboard from './components/admin/Dashboard';
+import ManageLiveStream from './components/admin/ManageLiveStream';
+import ManageGallery from './components/admin/ManageGallery';
 
-export default function App() {
+function App() {
   return (
-    <>
-      <Navbar />
-      <Hero />
-      <OurStory />
-      <Events />
-      <Gallery />
-      <DressCode />
-      <FamilyIntro />
-      <Venue />
-      <RSVP />
-      <LiveStream />
-      <GuestBook />
-      <Footer />
-    </>
+    <BrowserRouter>
+      <Routes>
+        {/* Public Website */}
+        <Route path="/" element={<PublicHome />} />
+
+        {/* Admin Dashboard */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="livestream" element={<ManageLiveStream />} />
+          <Route path="images" element={<ManageGallery />} />
+          {/* Placeholder routes for others */}
+          <Route path="*" element={<div style={{ padding: '2rem' }}>🚧 This section is under construction</div>} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
+
+export default App;
