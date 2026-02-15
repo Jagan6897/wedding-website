@@ -23,7 +23,7 @@ export default function Hero() {
                 {/* Couple Photos & Names */}
                 <div className="couple-row">
                     <img
-                        src="/images/groom.jpg"
+                        src={`${import.meta.env.BASE_URL}images/groom.jpg`}
                         alt={WEDDING_CONFIG.groom}
                         className="couple-photo"
                     />
@@ -31,7 +31,7 @@ export default function Hero() {
                     <span className="couple-amp">&</span>
                     <span className="couple-name">{WEDDING_CONFIG.bride}</span>
                     <img
-                        src="/images/bride.jpg"
+                        src={`${import.meta.env.BASE_URL}images/bride.jpg`}
                         alt={WEDDING_CONFIG.bride}
                         className="couple-photo"
                     />
