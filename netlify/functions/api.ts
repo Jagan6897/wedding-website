@@ -7,9 +7,9 @@ const headers = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
-// Hardcoded Admin Password Hash (SHA-256 for "wedding2026")
+// Hardcoded Admin Password Hash (SHA-256 for "Mummy@6897")
 // In a real app, use bcrypt and a DB table, but this is simple and sufficient for a personal site.
-const ADMIN_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+const ADMIN_HASH = 'e6febce3ec86e77d612c8b1363bbad365848c8f3fe5e10b7aea40e8fc1b244d5';
 
 export const handler: Handler = async (event, context) => {
     if (event.httpMethod === 'OPTIONS') {
