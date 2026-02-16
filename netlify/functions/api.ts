@@ -4,31 +4,64 @@ import { Client } from 'pg';
 const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
 };
 
 // Hardcoded Admin Password Hash (SHA-256 for "Mummy@6897")
-// In a real app, use bcrypt and a DB table, but this is simple and sufficient for a personal site.
 const ADMIN_HASH = 'e6febce3ec86e77d612c8b1363bbad365848c8f3fe5e10b7aea40e8fc1b244d5';
 
-export const handler: Handler = async (event, context) => {
-    if (event.httpMethod === 'OPTIONS') {
-        return { statusCode: 200, headers, body: '' };
-    }
+function getPath(event: { path: string }) {
+    return event.path.split('/api/')[1] || event.path.split('/').pop() || '';
+}
 
-    const client = new Client({
+function getDbClient() {
+    return new Client({
         user: process.env.DB_USER,
         host: process.env.DB_HOST,
         database: process.env.DB_NAME,
         password: process.env.DB_PASSWORD,
         port: parseInt(process.env.DB_PORT || '5432'),
         ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 5000,
     });
+}
+
+export const handler: Handler = async (event) => {
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 200, headers, body: '' };
+    }
+
+    const path = getPath(event);
+
+    // =============================================
+    // LOGIN — No DB needed, respond instantly
+    // =============================================
+    if (path === 'login' && event.httpMethod === 'POST') {
+        try {
+            const { password } = JSON.parse(event.body || '{}');
+            const crypto = await import('crypto');
+            const hash = crypto.createHash('sha256').update(password || '').digest('hex');
+
+            if (hash === ADMIN_HASH) {
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify({ token: 'admin-token-secret' })
+                };
+            }
+            return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid password' }) };
+        } catch (err: unknown) {
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Bad request' }) };
+        }
+    }
+
+    // =============================================
+    // ALL OTHER ENDPOINTS — Need DB connection
+    // =============================================
+    const client = getDbClient();
 
     try {
         await client.connect();
-        // specific replacement for robust handling of /api/ or /.netlify/functions/api/
-        const path = event.path.split('/api/')[1] || event.path.split('/').pop() || '';
 
         // --- PUBLIC ENDPOINTS --- //
 
@@ -50,22 +83,6 @@ export const handler: Handler = async (event, context) => {
                 headers,
                 body: JSON.stringify(result.rows),
             };
-        }
-
-        // POST /api/login
-        if (path === 'login' && event.httpMethod === 'POST') {
-            const { password } = JSON.parse(event.body || '{}');
-            const crypto = await import('crypto');
-            const hash = crypto.createHash('sha256').update(password).digest('hex');
-
-            if (hash === ADMIN_HASH) {
-                return {
-                    statusCode: 200,
-                    headers,
-                    body: JSON.stringify({ token: 'admin-token-secret' })
-                };
-            }
-            return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid password' }) };
         }
 
         // --- PROTECTED ENDPOINTS (Require Authorization) --- //
@@ -91,21 +108,17 @@ export const handler: Handler = async (event, context) => {
         // POST /api/images (Upload Image)
         if (path === 'images' && event.httpMethod === 'POST') {
             const { category, data, caption } = JSON.parse(event.body || '{}');
-
-            // Basic validation
             if (!data || !category) {
                 return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing data' }) };
             }
-
             await client.query(
                 'INSERT INTO wedding_images (category, data, caption) VALUES ($1, $2, $3)',
                 [category, data, caption]
             );
-
             return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
         }
 
-        // DELETE /api/images (Delete Image)
+        // DELETE /api/images/:id
         if (path.startsWith('images/') && event.httpMethod === 'DELETE') {
             const id = path.split('/')[1];
             await client.query('DELETE FROM wedding_images WHERE id = $1', [id]);
@@ -114,10 +127,11 @@ export const handler: Handler = async (event, context) => {
 
         return { statusCode: 404, headers, body: JSON.stringify({ error: 'Not Found' }) };
 
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('Database Error:', error);
-        return { statusCode: 500, headers, body: JSON.stringify({ error: 'Internal Server Error', details: error.toString() }) };
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return { statusCode: 500, headers, body: JSON.stringify({ error: 'Internal Server Error', details: message }) };
     } finally {
-        await client.end();
+        try { await client.end(); } catch { /* ignore */ }
     }
 };
