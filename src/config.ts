@@ -9,7 +9,7 @@
 
 export const DEFAULT_CONFIG = {
     // Couple Names
-    bride: 'Mamatha',
+    bride: 'Dhaanvi',
     groom: 'Jagadeesh',
 
     // Wedding Date — Update this to your exact date & time
