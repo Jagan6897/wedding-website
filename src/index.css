@@ -363,6 +363,141 @@ img {
   opacity: 0;
 }
 
+/* ---------- Wedding Day Reveal ---------- */
+.reveal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 1rem 2.5rem;
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-maroon-deep);
+  background: var(--gradient-gold);
+  border: 2px solid var(--color-gold);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-spring);
+  animation: fadeInUp 1s ease 0.9s forwards, shimmerBtn 3s ease-in-out infinite;
+  opacity: 0;
+  box-shadow: 0 4px 25px rgba(212, 168, 83, 0.4), 0 0 60px rgba(212, 168, 83, 0.15);
+  letter-spacing: 0.5px;
+}
+
+.reveal-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 35px rgba(212, 168, 83, 0.6), 0 0 80px rgba(212, 168, 83, 0.25);
+}
+
+.reveal-btn:active {
+  transform: scale(0.97);
+}
+
+.reveal-btn-icon {
+  font-size: 1.4rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.reveal-btn-sparkle {
+  font-size: 1.2rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes shimmerBtn {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Reveal Container */
+.reveal-container {
+  animation: revealIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xl);
+}
+
+@keyframes revealIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(30px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.reveal-photo-wrapper {
+  width: 280px;
+  height: 340px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 3px solid var(--color-gold);
+  box-shadow: 0 0 30px rgba(212, 168, 83, 0.4), 0 8px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.reveal-photo-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(212, 168, 83, 0.3);
+  pointer-events: none;
+}
+
+.reveal-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.5s ease;
+}
+
+.reveal-photo-wrapper:hover .reveal-photo {
+  transform: scale(1.05);
+}
+
+.reveal-date-card {
+  text-align: center;
+  animation: fadeInUp 0.6s ease 0.3s forwards;
+  opacity: 0;
+}
+
+.reveal-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: var(--color-gold-light);
+  font-weight: 300;
+  margin-bottom: var(--space-sm);
+}
+
+.reveal-date {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  color: var(--color-white);
+  margin-bottom: var(--space-sm);
+  text-shadow: 0 2px 20px rgba(212, 168, 83, 0.3);
+}
+
+.reveal-venue {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
+  font-weight: 300;
+}
+
 /* Floating decorative elements */
 .hero-decoration {
   position: absolute;
