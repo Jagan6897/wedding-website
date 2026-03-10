@@ -5,7 +5,7 @@ import Events from './Events';
 import Gallery from './Gallery';
 import DressCode from './DressCode';
 import Venue from './Venue';
-import RSVP from './RSVP';
+
 import LiveStream from './LiveStream';
 import GuestBook from './GuestBook';
 import FamilyIntro from './FamilyIntro';
@@ -22,7 +22,7 @@ export default function PublicHome() {
             <DressCode />
             <FamilyIntro />
             <Venue />
-            <RSVP />
+
             <LiveStream />
             <GuestBook />
             <Footer />
