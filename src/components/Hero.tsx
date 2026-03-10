@@ -60,7 +60,14 @@ export default function Hero() {
                         <div className="reveal-date-card">
                             <p className="reveal-label">Save the Date</p>
                             <h2 className="reveal-date">{dateStr}</h2>
-                            <p className="reveal-venue">📍 {WEDDING_CONFIG.venue.name}, {WEDDING_CONFIG.venue.address}</p>
+                            <a
+                                href={WEDDING_CONFIG.venue.mapsLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="reveal-venue"
+                            >
+                                📍 {WEDDING_CONFIG.venue.name}, {WEDDING_CONFIG.venue.address}
+                            </a>
                         </div>
                     </div>
                 )}

@@ -496,6 +496,14 @@ img {
   color: rgba(255, 255, 255, 0.65);
   font-size: 0.95rem;
   font-weight: 300;
+  text-decoration: none;
+  transition: var(--transition-fast);
+  cursor: pointer;
+}
+
+.reveal-venue:hover {
+  color: var(--color-gold-light);
+  text-decoration: underline;
 }
 
 /* Floating decorative elements */
