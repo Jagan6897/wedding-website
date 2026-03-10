@@ -2,40 +2,57 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { DEFAULT_CONFIG } from '../config';
 
-interface DBImage {
+interface GalleryImage {
     id: string;
     category: string;
     caption: string;
-    data: string; // Base64
+    data: string;
+    source?: string;
 }
+
+const LOCAL_STORAGE_KEY = 'wedding_gallery_images';
 
 export default function Gallery() {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-    const [dbImages, setDbImages] = useState<DBImage[]>([]);
+    const [images, setImages] = useState<GalleryImage[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchGallery = async () => {
+        const loadImages = async () => {
+            // 1. Load localStorage images immediately
+            let localImages: GalleryImage[] = [];
+            try {
+                localImages = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+            } catch { /* empty */ }
+
+            // 2. Try to fetch from API
+            let dbImages: GalleryImage[] = [];
             try {
                 const res = await fetch('/api/images');
                 if (res.ok) {
                     const data = await res.json();
-                    // Filter for gallery category if we add others later
-                    const galleryImages = data.filter((img: DBImage) => img.category === 'gallery');
-                    setDbImages(galleryImages);
+                    dbImages = data.filter((img: GalleryImage) => img.category === 'gallery');
                 }
-            } catch (error) {
-                console.error('Failed to load gallery images');
-            } finally {
-                setIsLoading(false);
+            } catch {
+                // API not available
             }
+
+            // 3. Merge: local first, then DB (avoid duplicates)
+            const localIds = new Set(localImages.map(img => img.id));
+            const merged = [
+                ...localImages,
+                ...dbImages.filter(img => !localIds.has(img.id)),
+            ];
+
+            setImages(merged);
+            setIsLoading(false);
         };
 
-        fetchGallery();
+        loadImages();
     }, []);
 
-    const hasUploads = dbImages.length > 0;
-    const displayItems = hasUploads ? dbImages : DEFAULT_CONFIG.venue.galleryPlaceholders;
+    const hasUploads = images.length > 0;
+    const displayItems = hasUploads ? images : DEFAULT_CONFIG.venue.galleryPlaceholders;
 
     return (
         <section className="section gallery-section" id="gallery">
@@ -52,14 +69,14 @@ export default function Gallery() {
                     {displayItems.map((item: any, index: number) => (
                         <div
                             className="gallery-item"
-                            key={index}
+                            key={hasUploads ? (item as GalleryImage).id : index}
                             onClick={() => setLightboxIndex(index)}
                         >
                             <div className="gallery-placeholder">
                                 {hasUploads ? (
                                     <img
-                                        src={(item as DBImage).data}
-                                        alt={(item as DBImage).caption}
+                                        src={(item as GalleryImage).data}
+                                        alt={(item as GalleryImage).caption}
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     />
                                 ) : (
@@ -107,12 +124,12 @@ export default function Gallery() {
                         {hasUploads ? (
                             <>
                                 <img
-                                    src={(displayItems[lightboxIndex] as DBImage).data}
-                                    alt={(displayItems[lightboxIndex] as DBImage).caption}
+                                    src={(displayItems[lightboxIndex] as GalleryImage).data}
+                                    alt={(displayItems[lightboxIndex] as GalleryImage).caption}
                                     style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: '8px' }}
                                 />
                                 <p style={{ color: 'white', textAlign: 'center', marginTop: '1rem' }}>
-                                    {(displayItems[lightboxIndex] as DBImage).caption}
+                                    {(displayItems[lightboxIndex] as GalleryImage).caption}
                                 </p>
                             </>
                         ) : (

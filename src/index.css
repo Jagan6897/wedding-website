@@ -1686,3 +1686,96 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Admin Gallery ---------- */
+.admin-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.admin-img-card {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  aspect-ratio: 1;
+  border: 1px solid rgba(212, 168, 83, 0.2);
+}
+
+.admin-img-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-img-card .delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(220, 38, 38, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.admin-img-card:hover .delete-btn {
+  opacity: 1;
+}
+
+.img-source-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 12px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  font-size: 0.7rem;
+}
+
+.upload-section {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0.75rem 1.5rem;
+  background: var(--color-maroon);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.upload-btn:hover {
+  background: var(--color-maroon-deep);
+  transform: translateY(-2px);
+}
+
+.sync-btn {
+  background: var(--color-emerald);
+}
+
+.sync-btn:hover {
+  background: #245a42;
+}
