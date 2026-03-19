@@ -1,58 +1,38 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { DEFAULT_CONFIG } from '../config';
+import { Camera, ImagePlus, X } from 'lucide-react';
 
-interface GalleryImage {
+interface GalleryMedia {
     id: string;
-    category: string;
-    caption: string;
     data: string;
-    source?: string;
+    caption: string;
 }
 
-const LOCAL_STORAGE_KEY = 'wedding_gallery_images';
-
 export default function Gallery() {
-    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-    const [images, setImages] = useState<GalleryImage[]>([]);
+    const [images, setImages] = useState<GalleryMedia[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
     useEffect(() => {
-        const loadImages = async () => {
-            // 1. Load localStorage images immediately
-            let localImages: GalleryImage[] = [];
+        const fetchGooglePhotos = async () => {
             try {
-                localImages = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
-            } catch { /* empty */ }
-
-            // 2. Try to fetch from API
-            let dbImages: GalleryImage[] = [];
-            try {
-                const res = await fetch('/api/images');
+                const res = await fetch('/api/google-photos');
                 if (res.ok) {
                     const data = await res.json();
-                    dbImages = data.filter((img: GalleryImage) => img.category === 'gallery');
+                    setImages(data);
+                } else {
+                    console.error("Failed to load generic gallery");
                 }
-            } catch {
-                // API not available
+            } catch (err) {
+                console.error("Error connecting to Google Photos link:", err);
+            } finally {
+                setIsLoading(false);
             }
-
-            // 3. Merge: local first, then DB (avoid duplicates)
-            const localIds = new Set(localImages.map(img => img.id));
-            const merged = [
-                ...localImages,
-                ...dbImages.filter(img => !localIds.has(img.id)),
-            ];
-
-            setImages(merged);
-            setIsLoading(false);
         };
 
-        loadImages();
+        fetchGooglePhotos();
     }, []);
 
     const hasUploads = images.length > 0;
-    const displayItems = hasUploads ? images : DEFAULT_CONFIG.venue.galleryPlaceholders;
 
     return (
         <section className="section gallery-section" id="gallery">
@@ -62,37 +42,39 @@ export default function Gallery() {
                 Moments captured in time — our journey in pictures 📸
             </p>
 
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <a 
+                    href="https://photos.app.goo.gl/wH5EmznKKVQtVVim8"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                >
+                    <ImagePlus size={20} />
+                    Add Your Photos to our Google Album
+                </a>
+            </div>
+
             {isLoading ? (
-                <p style={{ textAlign: 'center', margin: '2rem' }}>Loading memories...</p>
-            ) : (
+                <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--color-text-muted)' }}>
+                    <Camera className="animate-pulse" size={48} style={{ margin: '0 auto 1rem auto' }} />
+                    <p>Loading moments from Google Photos...</p>
+                </div>
+            ) : hasUploads ? (
                 <div className="gallery-grid">
-                    {displayItems.map((item: any, index: number) => (
+                    {images.map((img, index) => (
                         <div
                             className="gallery-item"
-                            key={hasUploads ? (item as GalleryImage).id : index}
+                            key={img.id}
                             onClick={() => setLightboxIndex(index)}
                         >
                             <div className="gallery-placeholder">
-                                {hasUploads ? (
-                                    <img
-                                        src={(item as GalleryImage).data}
-                                        alt={(item as GalleryImage).caption}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
-                                ) : (
-                                    <div style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>
-                                            {(item as { emoji: string }).emoji}
-                                        </div>
-                                        <div style={{
-                                            fontSize: '0.85rem',
-                                            color: 'var(--color-text-light)',
-                                            fontWeight: 300,
-                                        }}>
-                                            {(item as { label: string }).label}
-                                        </div>
-                                    </div>
-                                )}
+                                <img
+                                    src={img.data}
+                                    alt="Wedding memory from Google Photos"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    loading="lazy"
+                                />
                             </div>
                             <div className="gallery-overlay">
                                 <span style={{ color: 'white', fontSize: '1.5rem' }}>🔍</span>
@@ -100,55 +82,28 @@ export default function Gallery() {
                         </div>
                     ))}
                 </div>
-            )}
-
-            {!hasUploads && (
-                <p style={{
-                    textAlign: 'center',
-                    marginTop: 'var(--space-2xl)',
-                    color: 'var(--color-text-muted)',
-                    fontStyle: 'italic',
-                    fontSize: '0.95rem',
-                }}>
-                    ✨ Pre-wedding shoot photos coming soon! (Upload them via Admin Panel)
+            ) : (
+                <p style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-muted)' }}>
+                    Our album is empty so far. Click the upload button above to add the first memory!
                 </p>
             )}
 
-            {/* Lightbox */}
+            {/* Native Lightbox */}
             {lightboxIndex !== null && (
                 <div className="lightbox" onClick={() => setLightboxIndex(null)}>
                     <button className="lightbox-close" onClick={() => setLightboxIndex(null)}>
-                        <X />
+                        <X size={32} />
                     </button>
                     <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-                        {hasUploads ? (
-                            <>
-                                <img
-                                    src={(displayItems[lightboxIndex] as GalleryImage).data}
-                                    alt={(displayItems[lightboxIndex] as GalleryImage).caption}
-                                    style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: '8px' }}
-                                />
-                                <p style={{ color: 'white', textAlign: 'center', marginTop: '1rem' }}>
-                                    {(displayItems[lightboxIndex] as GalleryImage).caption}
-                                </p>
-                            </>
-                        ) : (
-                            <div style={{
-                                textAlign: 'center',
-                                color: 'white',
-                                padding: '2rem',
-                            }}>
-                                <div style={{ fontSize: '8rem', marginBottom: '1rem' }}>
-                                    {(displayItems[lightboxIndex] as any).emoji}
-                                </div>
-                                <p style={{ fontSize: '1.3rem', fontWeight: 300 }}>
-                                    {(displayItems[lightboxIndex] as any).label}
-                                </p>
-                            </div>
-                        )}
+                        <img
+                            src={images[lightboxIndex].data}
+                            alt="Full resolution"
+                            style={{ maxWidth: '90vw', maxHeight: '85vh', borderRadius: '8px', boxShadow: '0 8px 30px rgba(0,0,0,0.5)' }}
+                        />
                     </div>
                 </div>
             )}
         </section>
     );
 }
+

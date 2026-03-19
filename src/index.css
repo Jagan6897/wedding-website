@@ -493,17 +493,23 @@ img {
 }
 
 .reveal-venue {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--color-gold-light);
   font-size: 0.95rem;
-  font-weight: 300;
-  text-decoration: none;
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: rgba(212, 168, 83, 0.5);
   transition: var(--transition-fast);
   cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-sm);
 }
 
 .reveal-venue:hover {
-  color: var(--color-gold-light);
-  text-decoration: underline;
+  color: var(--color-gold);
+  text-decoration-color: var(--color-gold);
+  background: rgba(212, 168, 83, 0.15);
+  text-shadow: 0 0 12px rgba(212, 168, 83, 0.4);
 }
 
 /* Floating decorative elements */

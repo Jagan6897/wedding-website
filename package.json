@@ -12,6 +12,7 @@
   "dependencies": {
     "@netlify/functions": "^5.1.2",
     "@types/pg": "^8.16.0",
+    "google-photos-album-image-url-fetch": "^3.2.0",
     "lucide-react": "^0.564.0",
     "pg": "^8.18.0",
     "react": "^19.2.0",
