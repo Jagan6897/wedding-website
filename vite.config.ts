@@ -8,9 +8,10 @@ function googlePhotosDevPlugin() {
     configureServer(server: any) {
       server.middlewares.use('/api/google-photos', async (_req: any, res: any) => {
         try {
+          // @ts-ignore - no type declarations for this package
           const { fetchImageUrls } = await import('google-photos-album-image-url-fetch');
           const urls = await fetchImageUrls('https://photos.app.goo.gl/wH5EmznKKVQtVVim8');
-          const images = urls.map((obj: any, i: number) => ({
+          const images = (urls || []).map((obj: any, i: number) => ({
             id: `gp-${i}`,
             data: obj.url,
             caption: '',
