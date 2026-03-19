@@ -11,6 +11,9 @@ export default function Gallery() {
     const [images, setImages] = useState<GalleryMedia[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const [showAll, setShowAll] = useState(false);
+
+    const INITIAL_COUNT = 10;
 
     useEffect(() => {
         const fetchGooglePhotos = async () => {
@@ -61,27 +64,40 @@ export default function Gallery() {
                     <p>Loading moments from Google Photos...</p>
                 </div>
             ) : hasUploads ? (
-                <div className="gallery-grid">
-                    {images.map((img, index) => (
-                        <div
-                            className="gallery-item"
-                            key={img.id}
-                            onClick={() => setLightboxIndex(index)}
-                        >
-                            <div className="gallery-placeholder">
-                                <img
-                                    src={img.data}
-                                    alt="Wedding memory from Google Photos"
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    loading="lazy"
-                                />
+                <>
+                    <div className="gallery-grid">
+                        {(showAll ? images : images.slice(0, INITIAL_COUNT)).map((img, index) => (
+                            <div
+                                className="gallery-item"
+                                key={img.id}
+                                onClick={() => setLightboxIndex(showAll ? index : index)}
+                            >
+                                <div className="gallery-placeholder">
+                                    <img
+                                        src={img.data}
+                                        alt="Wedding memory from Google Photos"
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        loading="lazy"
+                                    />
+                                </div>
+                                <div className="gallery-overlay">
+                                    <span style={{ color: 'white', fontSize: '1.5rem' }}>🔍</span>
+                                </div>
                             </div>
-                            <div className="gallery-overlay">
-                                <span style={{ color: 'white', fontSize: '1.5rem' }}>🔍</span>
-                            </div>
+                        ))}
+                    </div>
+                    {images.length > INITIAL_COUNT && (
+                        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => setShowAll(!showAll)}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '1rem', padding: '0.75rem 2rem' }}
+                            >
+                                {showAll ? '← Show Less' : `See More (${images.length - INITIAL_COUNT}+ photos)`}
+                            </button>
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
             ) : (
                 <p style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-muted)' }}>
                     Our album is empty so far. Click the upload button above to add the first memory!

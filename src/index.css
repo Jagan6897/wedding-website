@@ -811,8 +811,8 @@ img {
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: var(--space-md);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-sm);
 }
 
 .gallery-item {
@@ -1633,7 +1633,8 @@ img {
   }
 
   .gallery-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
   }
 
   .dresscode-grid {
@@ -1655,7 +1656,8 @@ img {
 
 @media (max-width: 480px) {
   .gallery-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
   }
 
   .dresscode-grid {
