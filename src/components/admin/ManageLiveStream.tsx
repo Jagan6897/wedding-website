@@ -9,8 +9,22 @@ export default function ManageLiveStream() {
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        // Load initial value from config
-        setLiveUrl(WEDDING_CONFIG.liveStreamUrl);
+        // Load the latest value from database, not static config
+        const fetchLatest = async () => {
+            try {
+                const res = await fetch('/api/content');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.liveStreamUrl !== undefined) {
+                        setLiveUrl(data.liveStreamUrl);
+                    }
+                }
+            } catch {
+                // Fallback to static config
+                setLiveUrl(WEDDING_CONFIG.liveStreamUrl);
+            }
+        };
+        fetchLatest();
     }, []);
 
     const saveUrl = async (url: string) => {

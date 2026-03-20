@@ -1,11 +1,32 @@
+import { useState, useEffect } from 'react';
 import { Lock, Video } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
 import { WEDDING_CONFIG } from '../config';
 
 export default function LiveStream() {
+    const [liveUrl, setLiveUrl] = useState(WEDDING_CONFIG.liveStreamUrl);
+
+    useEffect(() => {
+        // Fetch the latest config from the database so admin updates are reflected
+        const fetchLatestConfig = async () => {
+            try {
+                const res = await fetch('/api/content');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.liveStreamUrl !== undefined) {
+                        setLiveUrl(data.liveStreamUrl);
+                    }
+                }
+            } catch {
+                // Fallback to static config if API is unavailable
+            }
+        };
+        fetchLatestConfig();
+    }, []);
+
     const now = new Date();
     const isUnlocked = now >= WEDDING_CONFIG.liveStreamDate;
-    const hasLink = WEDDING_CONFIG.liveStreamUrl.trim().length > 0;
+    const hasLink = liveUrl.trim().length > 0;
 
     return (
         <section className="section livestream-section" id="livestream">
@@ -33,7 +54,7 @@ export default function LiveStream() {
                         </div>
 
                         <a
-                            href={WEDDING_CONFIG.liveStreamUrl}
+                            href={liveUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="livestream-link-btn"
@@ -74,3 +95,4 @@ export default function LiveStream() {
         </section>
     );
 }
+
