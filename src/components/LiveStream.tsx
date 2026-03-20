@@ -24,8 +24,6 @@ export default function LiveStream() {
         fetchLatestConfig();
     }, []);
 
-    const now = new Date();
-    const isUnlocked = now >= WEDDING_CONFIG.liveStreamDate;
     const hasLink = liveUrl.trim().length > 0;
 
     return (
@@ -37,7 +35,7 @@ export default function LiveStream() {
             </p>
 
             <div className="livestream-card">
-                {isUnlocked && hasLink ? (
+                {hasLink ? (
                     <div className="livestream-unlocked">
                         <div className="live-badge">
                             <span className="live-dot" />
@@ -62,14 +60,6 @@ export default function LiveStream() {
                             <Video size={20} />
                             Watch Live Stream
                         </a>
-                    </div>
-                ) : isUnlocked && !hasLink ? (
-                    <div className="livestream-unlocked">
-                        <h3>🎬 Live stream link will be shared soon!</h3>
-                        <p style={{ color: 'var(--color-text-light)', marginTop: '1rem' }}>
-                            The wedding day is here! The live stream link will be updated shortly.
-                            Please check back soon or contact the family for the link.
-                        </p>
                     </div>
                 ) : (
                     <div className="livestream-locked">
