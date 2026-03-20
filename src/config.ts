@@ -20,7 +20,7 @@ export const DEFAULT_CONFIG = {
     liveStreamUrl: '',
 
     // Wedding Hashtag
-    hashtag: '#JagadeeshWedsMamatha2026',
+    hashtag: '#JagadeeshWedsDhaanvi2026',
 
     // Venue Details
     venue: {
@@ -116,7 +116,7 @@ export const DEFAULT_CONFIG = {
         {
             date: 'May 21, 2025',
             title: 'First Meeting',
-            description: 'Jagadeesh and Mamatha met for the first time. What started with nervous smiles quickly turned into an easy, warm conversation — it just felt right.',
+            description: 'Jagadeesh and Dhaanvi met for the first time. What started with nervous smiles quickly turned into an easy, warm conversation — it just felt right.',
         },
         {
             date: 'June 1, 2025',
@@ -158,10 +158,12 @@ export async function fetchConfig() {
         if (response.ok) {
             const data = await response.json();
             if (data && Object.keys(data).length > 0) {
-                // Parse dates back to Date objects
-                if (data.weddingDate) data.weddingDate = new Date(data.weddingDate);
-                if (data.liveStreamDate) data.liveStreamDate = new Date(data.liveStreamDate);
-                WEDDING_CONFIG = { ...DEFAULT_CONFIG, ...data };
+                // Only merge dynamic fields from the database.
+                // Static fields (bride, groom, story, events, families, etc.)
+                // should always come from DEFAULT_CONFIG to avoid stale DB data.
+                if (data.liveStreamUrl !== undefined) {
+                    WEDDING_CONFIG.liveStreamUrl = data.liveStreamUrl;
+                }
                 return WEDDING_CONFIG;
             }
         }
