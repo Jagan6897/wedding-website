@@ -18,6 +18,13 @@
 
 <body>
   <div id="root"></div>
+  
+  <!-- Hidden form to let Netlify know about the "wishes" form so it can collect submissions and send emails -->
+  <form name="wishes" data-netlify="true" netlify-honeypot="bot-field" hidden>
+    <input type="text" name="name" />
+    <textarea name="message"></textarea>
+  </form>
+
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
